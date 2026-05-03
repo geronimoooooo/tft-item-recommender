@@ -1,6 +1,7 @@
 """Evaluation metrics for recommender systems."""
 
 from typing import Sequence
+from src.context import Context
 import pandas as pd
 
 def recall_at_k(
@@ -63,7 +64,7 @@ def evaluate_recommender(
     computes recall@k and precision@k between predicted and actual items.
     
     Args:
-        recommender: Object with .recommend(champion) method.
+        recommender: Object with .recommend(context: Context) method.
         test_df: DataFrame with character_id, placement, itemNames.
         k: Top-K to evaluate.
         placement_threshold: Only evaluate on records with placement <= this.
@@ -77,12 +78,14 @@ def evaluate_recommender(
     precisions = []
     n_skipped = 0
     for _, row in filtered.iterrows():
-        champion = row['character_id']
         actual_items = row['itemNames']  
         if not actual_items:
             continue  # skip units with no items
-        
-        recommended = recommender.recommend(champion)
+        context = Context(
+            champion=row['character_id'],
+            tier=row['tier'],
+        )
+        recommended = recommender.recommend(context)
         if not recommended:
             n_skipped += 1
             continue  # cold start; skip for now

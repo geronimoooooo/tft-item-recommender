@@ -13,6 +13,7 @@ import numpy as np
 # 3. Local imports
 from src.preprocessing import load_all_matches, matches_to_unit_records
 from src.recommenders.frequency import FrequencyRecommender
+from src.recommenders.tier_frequency import TierFrequencyRecommender
 from src.recommenders.random_recommender import RandomRecommender
 from src.recommenders.popularity_recommender import PopularityRecommender
 from src.evaluation import evaluate_recommender
@@ -42,8 +43,9 @@ def main() -> None:
 
     print('\n[4/4] Training and evaluating...')
     recommenders = {'Frequency (per-champion)': FrequencyRecommender(top_k=3, placement_threshold=2),
-                   'Popularity': PopularityRecommender(top_k=3, placement_threshold=2),
-                   'Random': RandomRecommender(top_k=3, random_state=42)}
+                    'Frequency + tier': TierFrequencyRecommender(top_k=K, placement_threshold=2),
+                    'Popularity': PopularityRecommender(top_k=3, placement_threshold=2),
+                    'Random': RandomRecommender(top_k=3, random_state=42)}
     results = {}
     for name, rec in recommenders.items():
         print(f'\n ---{name}---')

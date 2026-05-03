@@ -6,6 +6,7 @@ For usage: python -m random_recommender.py
 
 import pandas as pd
 import random as random_module
+from src.context import Context
 
 class RandomRecommender:
     """Recommend K random items from the overall pool of items."""
@@ -30,7 +31,7 @@ class RandomRecommender:
                 unique_items.add(item)
         self.all_items = list(unique_items)
 
-    def recommend(self, champion: str) -> list[str]:
+    def recommend(self, context: Context) -> list[str]:
 
         """Recommend K random items from the overall pool, ignoring champion."""
 

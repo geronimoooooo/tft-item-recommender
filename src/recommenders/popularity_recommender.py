@@ -6,6 +6,7 @@ For usage: python -m popularity_recommender.py
 
 import pandas as pd
 from collections import Counter
+from src.context import Context
 
 class PopularityRecommender:
     """Recommend the K most popular items globally among high-placement players.
@@ -47,7 +48,7 @@ class PopularityRecommender:
         item_counts = Counter(all_items)
         self.popular_items = [item for item, _ in item_counts.most_common(self.top_k)]
     
-    def recommend(self, champion: str) -> list[str]:
+    def recommend(self, context: Context) -> list[str]:
         """Return top-K popular items (same for all champions).
         
         Args:

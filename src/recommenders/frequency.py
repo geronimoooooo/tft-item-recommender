@@ -6,6 +6,7 @@ used by high-placement players (top 2).
 
 from collections import Counter
 from typing import Optional
+from src.context import Context
 
 import pandas as pd
 
@@ -48,7 +49,7 @@ class FrequencyRecommender:
             for champ, counter in champion_to_item_counter.items()
         }
     
-    def recommend(self, champion: str) -> list[str]:
+    def recommend(self, context: Context) -> list[str]:
         """Return top-K items for a given champion.
         
         Args:
@@ -57,7 +58,7 @@ class FrequencyRecommender:
         Returns:
             List of K item IDs. Empty if champion is unknown (cold start).
         """
-        return self.champion_items.get(champion, [])
+        return self.champion_items.get(context.champion, [])
     
     def __repr__(self) -> str:
         n = len(self.champion_items)
