@@ -5,7 +5,6 @@ used by high-placement players (top 2).
 """
 
 from collections import Counter
-from typing import Optional
 from src.context import Context
 
 import pandas as pd
@@ -29,6 +28,7 @@ class FrequencyRecommender:
         self.top_k = top_k
         self.placement_threshold = placement_threshold
         self.champion_items: dict[str, list[str]] = {}
+        self.champion_scores: dict[str, dict[str, float]] = {}
     
     def fit(self, df: pd.DataFrame) -> None:
         """Learn champion → top-K items mapping from data.
@@ -36,7 +36,8 @@ class FrequencyRecommender:
         Args:
             df: DataFrame with columns 'character_id', 'placement', 'itemNames'.
         """
-        filtered = df[df['placement'] <= self.placement_threshold]
+        filtered = df[(df['placement'] <= self.placement_threshold)
+                       & (df['num_items'] > 0)]
         champion_to_item_counter = {}
         for champion, group in filtered.groupby('character_id'):
             all_items = []
@@ -44,11 +45,32 @@ class FrequencyRecommender:
                 all_items.extend(items_list)
             champion_to_item_counter[champion] = Counter(all_items)
         
+        # Normalize counts to scores in [0, 1] using max-normalization
+        self.champion_scores = {}
+        for champion, counter in champion_to_item_counter.items():
+            max_count = max(counter.values())
+            self.champion_scores[champion] = {
+                item: count / max_count
+                for item, count in counter.items()
+            }
+
         self.champion_items = {
             champ: [item for item, _ in counter.most_common(self.top_k)]
             for champ, counter in champion_to_item_counter.items()
         }
     
+    def score_all_items(self, context: Context) -> dict[str, float]:
+        """Return normalized scores for all items observed for this champion.
+    
+        Args:
+            context: Context with champion information.
+    
+        Returns:
+            Dict mapping item_id to score in [0, 1]. Empty if champion 
+            is unknown (cold start).
+        """
+        return self.champion_scores.get(context.champion, {})
+
     def recommend(self, context: Context) -> list[str]:
         """Return top-K items for a given champion.
         

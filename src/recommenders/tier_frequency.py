@@ -18,6 +18,7 @@ class TierFrequencyRecommender(FrequencyRecommender):
                  placement_threshold: int = 2) -> None:
         super().__init__(top_k=top_k, placement_threshold=placement_threshold)
         self.champion_tier_items: dict[tuple[str, int], list[str]] = {}
+        self.champion_tier_scores: dict[tuple[str, int], dict[str, float]] = {}
 
     def fit(self, df: pd.DataFrame) -> None:
         """Learn champion and tier → top-K items mapping from data.
