@@ -18,7 +18,7 @@ class TierFrequencyRecommender(FrequencyRecommender):
                  placement_threshold: int = 2) -> None:
         super().__init__(top_k=top_k, placement_threshold=placement_threshold)
         self.champion_tier_items: dict[tuple[str, int], list[str]] = {}
-        self.champion_tier_scores: dict[tuple[str, int], dict[str, float]] = {}
+        self.champion_tier_score: dict[tuple[str, int], dict[str, float]] = {}
 
     def fit(self, df: pd.DataFrame) -> None:
         """Learn champion and tier → top-K items mapping from data.
@@ -39,12 +39,37 @@ class TierFrequencyRecommender(FrequencyRecommender):
             for items_list in group['itemNames']:
                 all_items.extend(items_list)
             champion_tier_counters[(champion, tier)] = Counter(all_items)
+        
+        self.champion_tier_score = {}
+        for (champion, tier), counter in champion_tier_counters.items():
+            if not counter:
+                continue
+            max_count = max(counter.values())
+            self.champion_tier_score[(champion, tier)] = {
+                item: count / max_count
+                for item, count in counter.items() 
+            }
 
         self.champion_tier_items = {
             key: [item for item, _ in counter.most_common(self.top_k)]
             for key, counter in champion_tier_counters.items()
         }
     
+    def score_all_items(self, context: Context) -> dict[str, float]:
+        """Return normalized scores for (champion, tier) or fallback to parent.
+    
+        Args:
+            context: Context with champion and tier.
+    
+        Returns:
+            Dict of item → score. Falls back to champion-only scores 
+            if (champion, tier) pair was not seen during training.
+        """
+        key = (context.champion, context.tier)
+        if key in self.champion_tier_score:
+            return self.champion_tier_score[key]
+        return super().score_all_items(context)
+
     def recommend(self, context: Context) -> list[str]:
         """Return top-K items for a given champion and champion's tier.
         
@@ -64,4 +89,4 @@ class TierFrequencyRecommender(FrequencyRecommender):
     
     def __repr__(self) -> str:
         n = len(self.champion_tier_items)
-        return f'TierFrequencyRecommender(top_k={self.top_k}, fitted_on={n}_pairs'
+        return f'TierFrequencyRecommender(top_k={self.top_k}, fitted_on={n}_pairs)'

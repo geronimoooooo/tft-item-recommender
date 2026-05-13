@@ -32,6 +32,7 @@ from src.recommenders.tier_frequency import TierFrequencyRecommender
 from src.recommenders.random_recommender import RandomRecommender
 from src.recommenders.popularity_recommender import PopularityRecommender
 from src.recommenders.trait_recommender import TraitFrequencyRecommender
+from src.recommenders.hybrid import HybridRecommender
 from src.evaluation import evaluate_recommender
 from src.config import K, PT
 
@@ -102,6 +103,7 @@ def main() -> None:
         'Frequency': FrequencyRecommender,
         'Frequency + tier': TierFrequencyRecommender,
         'Frequency + trait': TraitFrequencyRecommender,
+        'Hybrid (50/50)': HybridRecommender,
         'Popularity': PopularityRecommender,
         'Random': RandomRecommender,
         }
@@ -114,6 +116,8 @@ def main() -> None:
         for rec_name , RecClass in recommenders.items():
             if RecClass == RandomRecommender:
                 rec = RecClass(top_k=K, random_state=42)
+            elif RecClass == HybridRecommender:
+                rec = RecClass(top_k=K, placement_threshold=PT, tier_weight=0.5, trait_weight=0.5)
             else:
                 rec = RecClass(top_k=K, placement_threshold=PT)
             rec.fit(train_df)
@@ -129,7 +133,7 @@ def main() -> None:
 
     header = f'{"Recommender":<30}'
     for config_name, _, _ in configs:
-        header += f'{config_name:>15}'
+        header += f'{config_name:>20}'
     print(header)
     print('-' * 80)
 
@@ -137,7 +141,7 @@ def main() -> None:
         row = f'{rec_name:<30}'
         for config_name, _, _ in configs:
             recall = results[config_name][rec_name]
-            row += f'{recall:>15.4f}'
+            row += f'{recall:>20.4f}'
         print(row)
 
 if __name__ == '__main__':
