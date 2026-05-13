@@ -103,7 +103,7 @@ def main() -> None:
         'Frequency': FrequencyRecommender,
         'Frequency + tier': TierFrequencyRecommender,
         'Frequency + trait': TraitFrequencyRecommender,
-        'Hybrid (50/50)': HybridRecommender,
+        'Hybrid (30/70)': HybridRecommender,
         'Popularity': PopularityRecommender,
         'Random': RandomRecommender,
         }
@@ -117,7 +117,7 @@ def main() -> None:
             if RecClass == RandomRecommender:
                 rec = RecClass(top_k=K, random_state=42)
             elif RecClass == HybridRecommender:
-                rec = RecClass(top_k=K, placement_threshold=PT, tier_weight=0.5, trait_weight=0.5)
+                rec = RecClass(top_k=K, placement_threshold=PT, tier_weight=0.3, trait_weight=0.7)
             else:
                 rec = RecClass(top_k=K, placement_threshold=PT)
             rec.fit(train_df)
